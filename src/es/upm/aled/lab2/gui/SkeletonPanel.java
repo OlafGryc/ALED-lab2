@@ -29,7 +29,7 @@ public class SkeletonPanel extends JPanel {
 	 * 
 	 * @param root  The first Segment of the kinematic chain.
 	 * @param sizeX The width of the window.
-	 * @param sizeX The height of the window.
+	 * @param sizeY The height of the window.
 	 */
 	public SkeletonPanel(Segment root, int sizeX, int sizeY) {
 		this.root = root;
@@ -49,6 +49,12 @@ public class SkeletonPanel extends JPanel {
 		float originY = getHeight() / 2;
 
 		// Computes the full tree of positions
+		/*
+		 * Tenemos que llamar a la clase ForwardKinematics, porque computePositions no está en la clase
+		 * donde estamos ahora. Podriamos llamar computePositions o a la clase, como en este caso, o bien
+		 * a un objeto de la clase. Como este método es static, lo llamamos directamente a la clase, no a su
+		 * objeto.
+		 */
 		Node nodeRoot = ForwardKinematics.computePositions(root, originX, originY);
 
 		// Draw the tree of Nodes recursively
@@ -56,12 +62,21 @@ public class SkeletonPanel extends JPanel {
 	}
 
 	private void drawSkeleton(Graphics g, double parentX, double parentY, Node node) {
-		// TODO: Ponga comentarios en este método
+		//node es el punto al que dibujamos la linea, parentX, parent Y son las coordenadas del final del ultimo segmento
+		//el programa solo dibuja los nodos y lineas, pero los nodos se CALCULAN ANTES en ForwardKinematics.computePositions
+		//alli esta realmente la dificultad, las lineas solo unen posiciones de nodos ya calculados
+		
+		//dibujar el nodo
 		g.fillOval((int) node.getX() - 4, (int) node.getY() - 4, 8, 8);
+		//dibujar la linea
 		g.drawLine((int) parentX, (int) parentY, (int) node.getX(), (int) node.getY());
+		
+		//mira si el nodo tiene nodos hijos para continuar dibujar
 		if (node.getChildren().size() == 0) {
+			//si no tiene nodos hijos, vuelve
 			return;
 		}
+		//si tiene nodos hijos, va al hijo
 		for (Node child : node.getChildren()) {
 			drawSkeleton(g, node.getX(), node.getY(), child);
 		}
