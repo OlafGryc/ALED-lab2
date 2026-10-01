@@ -27,7 +27,6 @@ public class ForwardKinematics {
 	// Public method: returns the root of the position tree
 	
 	private static double accumulatedAngle = 0;
-	private static double lastAngle = 0;
 
 	public static Node computePositions(Segment root, double originX, double originY) {
 		return(computePositions(root, originX, originY, accumulatedAngle));
@@ -36,25 +35,38 @@ public class ForwardKinematics {
 	// Private helper method that implements the recursive algorithm
 	private static Node computePositions(Segment link, double baseX, double baseY, double accumulatedAngle) {
 		Node newNodo = new Node(baseX, baseY);
-		
-		if (link.getChildren().size() == 0) {
-			//si no tiene nodos hijos, vuelve
-			//accumulatedAngle-=lastAngle;
-			double newBaseX = baseX + link.getLength()*Math.cos(accumulatedAngle);
-			double newBaseY = baseX + link.getLength()*Math.sin(accumulatedAngle);
-			return new Node(newBaseX, newBaseY);
-		}
 		accumulatedAngle+=link.getAngle();
-		//lastAngle=link.getAngle();
 		double newBaseX = baseX + link.getLength()*Math.cos(accumulatedAngle);
 		double newBaseY = baseY + link.getLength()*Math.sin(accumulatedAngle);
-		newNodo.addChild(new Node(newBaseX, newBaseY));
+		/**
+		 * newNodo.addChild(new Node(newBaseX, newBaseY));
+		 *lo eliminamos, porque este nodo que añadimos es un nodo sin ningun hijo, un nodo
+		 *como un punto solitario
+		 *vamos a añadir este nodo recurriendo a la propia funcion, abajo, donde llamamos un nodo hijo
+		 *
+		 *lo vamos a añadir en el if, porque alli si que tenemos que poner un nodo como un simple punto
+		 *sin mas ramificaciones, es decir hijos
+		*/
 		
-		
+		if (link.getChildren().size() == 0) {
+			newNodo.addChild(new Node(newBaseX, newBaseY));
+			/**
+			 * accumulatedAngle-=link.getAngle();
+			 * 
+			 * no hace falta ponerlo, ya que accumulatedAngle es un tipo primitivo (double)
+			 * y se pasa como argumento al metodo recursivo. Cualquier cambio que le hagamos
+			 * solo existe en la llamada concreta, por lo que, al dar return, el valor vuelve 
+			 * a ser el mismo que antes. Al terminar una llamada y volver a la llamada "padre", 
+			 * el valor de accumulatedAngle en el "padre" no se ha visto afectado
+			 * 
+			 * por tanto no hace falta poner esta linea
+			 */
+			return newNodo;
+		}
 		for (Segment child : link.getChildren()) {
-			Node hijo = computePositions(child, newBaseX, newBaseY, accumulatedAngle);
-			//pegarme con ello
-			
+			Node hijo = computePositions(child, newBaseX, newBaseY, accumulatedAngle);	
+			newNodo.addChild(hijo);
+
 		}
 		return newNodo;
 	}
